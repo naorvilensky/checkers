@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import ChessPiece from "./ChessPiece";
-import { useEffect, useMemo } from "react";
-import { CELL_COLOR, CELL_STATE, CHESS_PIECE_COLOR } from "./chessConstants";
+import { useMemo } from "react";
+import { CELL_STATE, CHESS_PIECE_COLOR } from "./chessConstants";
 
 const Container = styled.div`
     width: ${({ cellSize }) => cellSize}px;

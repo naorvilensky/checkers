@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Cell from "./Cell";
 import { useEffect, useState } from "react";
-import { CELL_COLOR, CELL_STATE, CHESS_PIECE_COLOR, PIECE_PLACEMENTS } from "./chessConstants";
+import { CELL_COLOR, CELL_STATE, PIECE_PLACEMENTS } from "./chessConstants";
 
 const NUMBER_OF_CELLS = 8;
 const BOARD_SIZE = Math.min(window.screen.width, window.screen.height);
