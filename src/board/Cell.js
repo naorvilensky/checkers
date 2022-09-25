@@ -11,7 +11,7 @@ const Container = styled.div`
     cursor: ${({ pointer }) => (pointer ? "pointer" : "auto")};
 `;
 
-export default function Cell({ cellSize, color, cellState, piece, i, j, gameState, allowedCell }) {
+export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, gameState, allowedCell }) {
     const pieceColor = useMemo(() => {
         switch (cellState) {
             case CELL_STATE.RED:
@@ -23,7 +23,12 @@ export default function Cell({ cellSize, color, cellState, piece, i, j, gameStat
         }
     }, [cellState]);
     return (
-        <Container cellSize={cellSize} color={color} pointer={cellState === gameState || allowedCell}>
+        <Container
+            cellSize={cellSize}
+            color={color}
+            pointer={cellState === gameState || allowedCell}
+            onClick={() => onCellClicked(i, j)}
+        >
             {pieceColor ? <ChessPiece color={pieceColor} /> : null}
         </Container>
     );

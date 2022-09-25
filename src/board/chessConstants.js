@@ -18,3 +18,5 @@ export const PIECE_PLACEMENTS = {
     RED: 0,
     BLACK: 5,
 };
+
+export const STARTING_PLAYER = CELL_STATE.RED;
