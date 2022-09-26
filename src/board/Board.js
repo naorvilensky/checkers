@@ -49,7 +49,12 @@ export default function Board() {
         const i = cell.props.i;
         const j = cell.props.j;
 
-        const checkCellAllowed = (a, b) => {
+        const updateCell = (a, b) => {
+            cells[a][b] = cloneElement(cells[a][b], { allowedCell: true });
+            return true;
+        };
+
+        const checkCellAllowed = (a, b, cellState = CELL_STATE.EMPTY) => {
             if (a < 0 || b < 0 || a >= NUMBER_OF_CELLS || b >= NUMBER_OF_CELLS) {
                 return false;
             }
@@ -61,14 +66,23 @@ export default function Board() {
             }
 
             if (c.props.cellState === CELL_STATE.EMPTY) {
+                updateCell(a, b);
                 return true;
+            }
+
+            if (c.props.cellState !== cell.cellState && cellState !== CELL_STATE.EMPTY) {
+                const x = cellState === CELL_STATE.RED ? a + 1 : a - 1;
+                checkCellAllowed(x, b + 1);
+                checkCellAllowed(x, b - 1);
             }
         };
 
         const x = cell.props.cellState === CELL_STATE.RED ? i + 1 : i - 1;
-        const updateCell = (a, b) => (cells[a][b] = cloneElement(cells[a][b], { allowedCell: true }));
-        checkCellAllowed(x, j + 1) && updateCell(x, j + 1);
-        checkCellAllowed(x, j - 1) && updateCell(x, j - 1);
+
+        const f1 = checkCellAllowed(x, j + 1, cell.props.cellState);
+        const f2 = checkCellAllowed(x, j - 1, cell.props.cellState);
+
+        return f1 || f2;
     };
 
     useEffect(() => {
@@ -76,21 +90,40 @@ export default function Board() {
             return;
         }
 
-        const updateCellsGameState = (cells, gs) =>
-            cells.map((row) => row.map((cell) => cloneElement(cell, { gameState: gs })));
+        const updateCellsGameState = (cells, gs, args = {}) =>
+            cells.map((row) => row.map((cell) => cloneElement(cell, { gameState: gs, ...args })));
 
+        // player selected piece to move
         if (!previousCellSelected.current) {
-            previousCellSelected.current = cellSelected;
             setCells((cells) => {
-                setAllowedCells(cells[cellSelected[0]][cellSelected[1]], cells);
+                if (!setAllowedCells(cells[cellSelected[0]][cellSelected[1]], cells)) {
+                    return cells;
+                }
+
+                previousCellSelected.current = cellSelected;
                 return updateCellsGameState(cells, null);
             });
         } else {
-            previousCellSelected.current = null;
-            // toggle cell state
+            // player moved that piece
             setGameState((gameState) => {
                 const gs = gameState === CELL_STATE.RED ? CELL_STATE.BLACK : CELL_STATE.RED;
-                setCells((cells) => updateCellsGameState(cells, gs));
+                if (!previousCellSelected.current) {
+                    return gs;
+                }
+                setCells((cells) => {
+                    const cellsDup = [...cells];
+                    if (previousCellSelected.current) {
+                        const [i1, j1] = previousCellSelected.current;
+                        const [i2, j2] = cellSelected;
+                        const cellState = cellsDup[i1][j1].props.cellState;
+                        cellsDup[i1][j1] = cloneElement(cellsDup[i1][j1], { cellState: CELL_STATE.EMPTY });
+                        cellsDup[i2][j2] = cloneElement(cellsDup[i2][j2], { cellState });
+                        previousCellSelected.current = null;
+                    }
+                    return updateCellsGameState(cellsDup, gs, {
+                        allowedCell: false,
+                    });
+                });
                 return gs;
             });
         }
@@ -98,11 +131,11 @@ export default function Board() {
 
     useEffect(() => {
         let color = CELL_COLOR.WHITE;
-        const cellDup = [];
+        const cellsDup = [];
         for (let i = 0; i < NUMBER_OF_CELLS; i++) {
-            cellDup.push([]);
+            cellsDup.push([]);
             for (let j = 0; j < NUMBER_OF_CELLS; j++) {
-                cellDup[i].push(
+                cellsDup[i].push(
                     <Cell
                         color={color}
                         cellSize={CELL_SIZE}
@@ -120,7 +153,7 @@ export default function Board() {
             }
         }
 
-        setCells(cellDup);
+        setCells(cellsDup);
     }, []);
 
     return <Container>{cells}</Container>;

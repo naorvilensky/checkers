@@ -22,13 +22,11 @@ export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, 
                 return;
         }
     }, [cellState]);
+
+    const pointer = useMemo(() => cellState === gameState || allowedCell, [cellState, gameState, allowedCell]);
+
     return (
-        <Container
-            cellSize={cellSize}
-            color={color}
-            pointer={cellState === gameState || allowedCell}
-            onClick={() => onCellClicked(i, j)}
-        >
+        <Container cellSize={cellSize} color={color} pointer={pointer} onClick={() => pointer && onCellClicked(i, j)}>
             {pieceColor ? <ChessPiece color={pieceColor} /> : null}
         </Container>
     );
