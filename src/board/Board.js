@@ -23,8 +23,8 @@ export default function Board() {
     const previousCellSelected = useRef();
 
     const getCellPiece = (i, j) => {
-        const checkEven = (value) => (j % 2 === 0 ? value : null);
-        const checkOdd = (value) => (j % 2 !== 0 ? value : null);
+        const checkEven = (value) => (j % 2 === 0 ? value : CELL_STATE.EMPTY);
+        const checkOdd = (value) => (j % 2 !== 0 ? value : CELL_STATE.EMPTY);
         const red = CELL_STATE.RED,
             black = CELL_STATE.BLACK;
         switch (i) {
@@ -61,7 +61,7 @@ export default function Board() {
 
             const c = cells[a][b];
 
-            if (c.props.cellState === cell.cellState) {
+            if (c.props.cellState === cell.props.cellState) {
                 return false;
             }
 
@@ -70,12 +70,11 @@ export default function Board() {
                 return true;
             }
 
-            if (c.props.cellState !== cell.cellState && cellState !== CELL_STATE.EMPTY) {
+            if (c.props.cellState !== cell.props.cellState && cellState !== CELL_STATE.EMPTY) {
                 const x = cellState === CELL_STATE.RED ? a + 1 : a - 1;
-                const f1 = checkCellAllowed(x, b + 1);
-                const f2 = checkCellAllowed(x, b - 1);
+                const diff = j - b;
 
-                return f1 || f2;
+                return checkCellAllowed(x, b - diff);
             }
         };
 
