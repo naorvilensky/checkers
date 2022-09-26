@@ -72,8 +72,10 @@ export default function Board() {
 
             if (c.props.cellState !== cell.cellState && cellState !== CELL_STATE.EMPTY) {
                 const x = cellState === CELL_STATE.RED ? a + 1 : a - 1;
-                checkCellAllowed(x, b + 1);
-                checkCellAllowed(x, b - 1);
+                const f1 = checkCellAllowed(x, b + 1);
+                const f2 = checkCellAllowed(x, b - 1);
+
+                return f1 || f2;
             }
         };
 
@@ -116,6 +118,13 @@ export default function Board() {
                         const [i1, j1] = previousCellSelected.current;
                         const [i2, j2] = cellSelected;
                         const cellState = cellsDup[i1][j1].props.cellState;
+                        const diff1 = (i2 - i1) / 2;
+                        const diff2 = (j2 - j1) / 2;
+                        if (Math.abs(diff1) === 1) {
+                            cellsDup[i2 - diff1][j2 - diff2] = cloneElement(cellsDup[i2 - diff1][j2 - diff2], {
+                                cellState: CELL_STATE.EMPTY,
+                            });
+                        }
                         cellsDup[i1][j1] = cloneElement(cellsDup[i1][j1], { cellState: CELL_STATE.EMPTY });
                         cellsDup[i2][j2] = cloneElement(cellsDup[i2][j2], { cellState });
                         previousCellSelected.current = null;
