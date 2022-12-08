@@ -42,39 +42,25 @@ export class GameBoard {
         this.setAllCellsAsNotAllowed();
         const cell: GameCell = this.board[i][j];
 
-        const updateCell = (a: number, b: number) => {
-            this.board[a][b].setAllowed();
-            return true;
-        };
-
-        const checkCellAllowed = (a: number, b: number, cellState: CELL_STATE = CELL_STATE.EMPTY): any => {
-            if (a < 0 || b < 0 || a >= NUMBER_OF_CELLS || b >= NUMBER_OF_CELLS) {
+        const checkCellAllowed = (a: number, b: number): any => {
+            if (!this.checkValidCell(a, b)) {
                 return false;
             }
 
             const c: GameCell = this.board[a][b];
 
-            if (c.cellState === cell.cellState) {
+            if (c.cellState !== CELL_STATE.EMPTY) {
                 return false;
             }
 
-            if (c.cellState === CELL_STATE.EMPTY) {
-                updateCell(a, b);
-                return true;
-            }
-
-            if (c.cellState !== cell.cellState && cellState !== CELL_STATE.EMPTY) {
-                const x = cellState === CELL_STATE.RED ? a + 1 : a - 1;
-                const diff = j - b;
-
-                return checkCellAllowed(x, b - diff);
-            }
+            this.board[a][b].setAllowed();
+            return true;
         };
 
-        const x = cell.cellState === CELL_STATE.RED ? i + 1 : i - 1;
+        const direction = cell.cellState === CELL_STATE.RED ? i + 1 : i - 1;
 
-        const f1 = checkCellAllowed(x, j + 1, cell.cellState);
-        const f2 = checkCellAllowed(x, j - 1, cell.cellState);
+        const f1 = checkCellAllowed(direction, j + 1);
+        const f2 = checkCellAllowed(direction, j - 1);
 
         return f1 || f2;
     }
@@ -88,18 +74,27 @@ export class GameBoard {
         let rightCell;
         const cellState = cell.cellState;
 
-        const nextI = cell.i + cellState === CELL_STATE.RED ? 1 : -1;
+        const direction = cellState === CELL_STATE.RED ? 1 : -1;
+        let nextI = cell.i + direction;
 
-        if (nextI < 0 || nextI >= this.board.length) {
+        if (this.checkValidCell(nextI, 0)) {
             return false;
         }
 
-        if (cell.j - 1 > 0) {
+        if (this.checkValidCell(nextI, cell.j - 1)) {
             leftCell = this.board[nextI][cell.j - 1];
         }
 
-        if (cell.j + 1 < this.board.length) {
+        if (this.checkValidCell(nextI, cell.j + 1)) {
             rightCell = this.board[nextI][cell.j + 1];
         }
+    }
+
+    private checkValidCell(i: number, j: number) {
+        if (i < 0 || i >= this.board.length) {
+            return false;
+        }
+
+        return !(j < 0 || j >= this.board.length);
     }
 }
