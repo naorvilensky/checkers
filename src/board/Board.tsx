@@ -16,7 +16,7 @@ const Container = styled.div`
     box-shadow: 3px 6px 17px 5px rgba(0, 0, 0, 0.47);
 `;
 export default function Board() {
-    const [, setGameState] = useState<CELL_STATE>();
+    const [gameState, setGameState] = useState<CELL_STATE>();
     const [cellSelected, setCellSelected] = useState<CellCoordinates>();
     const previousCellSelected = useRef<CellCoordinates | null>();
     const gameBoard = useRef<GameBoard>();
@@ -94,7 +94,7 @@ export default function Board() {
                             i={cell.i}
                             j={cell.j}
                             cellState={cell.cellState}
-                            gameState={(gameBoard.current as GameBoard).gameState}
+                            gameState={gameState}
                             onCellClicked={(i: number, j: number) => setCellSelected({ i, j })}
                             allowedCell={cell.allowedCell}
                         />

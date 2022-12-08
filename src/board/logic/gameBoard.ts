@@ -79,7 +79,27 @@ export class GameBoard {
         return f1 || f2;
     }
 
-    setAllCellsAsNotAllowed() {
+    private setAllCellsAsNotAllowed() {
         this.board.forEach((row: GameCell[]) => row.forEach((cell: GameCell) => cell.setUnAllowed()));
+    }
+
+    private setAllowedEnemyCells(cell: GameCell) {
+        let leftCell;
+        let rightCell;
+        const cellState = cell.cellState;
+
+        const nextI = cell.i + cellState === CELL_STATE.RED ? 1 : -1;
+
+        if (nextI < 0 || nextI >= this.board.length) {
+            return false;
+        }
+
+        if (cell.j - 1 > 0) {
+            leftCell = this.board[nextI][cell.j - 1];
+        }
+
+        if (cell.j + 1 < this.board.length) {
+            rightCell = this.board[nextI][cell.j + 1];
+        }
     }
 }
