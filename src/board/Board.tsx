@@ -24,29 +24,43 @@ export default function Board() {
 
     useEffect(() => {
         const board: GameBoard = gameBoard.current as GameBoard;
+
         if (!cellSelected) {
             return;
         }
 
         // player selected piece to move
         if (!previousCellSelected.current) {
-            board.setAllowedCells(cellSelected);
-            previousCellSelected.current = cellSelected;
-            setUpdateGame((game) => !game);
+            if (board.setAllowedCells(cellSelected)) {
+                previousCellSelected.current = cellSelected;
+                setUpdateGame((game) => !game);
+            }
         } else {
+            // he might have pressed a different piece
+            if (board.pieceChanged(cellSelected)) {
+                board.setAllowedCells(cellSelected);
+                previousCellSelected.current = cellSelected;
+                setUpdateGame((game) => !game);
+                return;
+            }
+
             // player moved that piece
             setGameState((gameState: any) => {
                 const gs = gameState === CELL_STATE.RED ? CELL_STATE.BLACK : CELL_STATE.RED;
+
                 if (!previousCellSelected.current) {
                     board.gameState = gs;
                     return gs;
                 }
+
                 if (previousCellSelected.current) {
                     board.cellMovement(previousCellSelected.current, cellSelected);
                     previousCellSelected.current = null;
                 }
 
                 board.gameState = gs;
+
+                return gs;
             });
         }
     }, [cellSelected]);
@@ -55,7 +69,7 @@ export default function Board() {
     useEffect(() => {
         let color = CELL_COLOR.WHITE;
         gameBoard.current = new GameBoard(STARTING_PLAYER);
-        let board = gameBoard.current;
+        let board: GameBoard = gameBoard.current;
         for (let i = 0; i < NUMBER_OF_CELLS; i++) {
             for (let j = 0; j < NUMBER_OF_CELLS; j++) {
                 board.addCell(color, i, j);

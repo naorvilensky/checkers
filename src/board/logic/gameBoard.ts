@@ -18,9 +18,14 @@ export class GameBoard {
         this.board[i][j] = new GameCell(color, i, j);
     }
 
+    pieceChanged({ i, j }: CellCoordinates) {
+        return this.board[i][j].cellState !== CELL_STATE.EMPTY;
+    }
+
     cellMovement({ i: i1, j: j1 }: CellCoordinates, { i: i2, j: j2 }: CellCoordinates) {
         const previousCell = this.board[i1][j1];
         const selectedCell = this.board[i2][j2];
+
         const diff1 = (i2 - i1) / 2;
         const diff2 = (j2 - j1) / 2;
         if (Math.abs(diff1) === 1) {
@@ -30,9 +35,11 @@ export class GameBoard {
         const cellState = previousCell.cellState;
         previousCell.cellState = CELL_STATE.EMPTY;
         selectedCell.cellState = cellState;
+        this.setAllCellsAsNotAllowed();
     }
 
     setAllowedCells({ i, j }: CellCoordinates) {
+        this.setAllCellsAsNotAllowed();
         const cell: GameCell = this.board[i][j];
 
         const updateCell = (a: number, b: number) => {
@@ -70,5 +77,9 @@ export class GameBoard {
         const f2 = checkCellAllowed(x, j - 1, cell.cellState);
 
         return f1 || f2;
+    }
+
+    setAllCellsAsNotAllowed() {
+        this.board.forEach((row: GameCell[]) => row.forEach((cell: GameCell) => cell.setUnAllowed()));
     }
 }
