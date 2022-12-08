@@ -29,7 +29,7 @@ export class GameBoard {
         selectedCell.cellState = cellState;
     }
 
-    setAllowedCells(i, j) {
+    setAllowedCells({ i, j }) {
         const cell = this.board[i][j];
 
         const updateCell = (a, b) => {

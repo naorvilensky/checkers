@@ -29,7 +29,7 @@ export default function Board() {
 
         // player selected piece to move
         if (!previousCellSelected.current) {
-            board.setAllowedCells(cellSelected.i, cellSelected.j);
+            board.setAllowedCells(cellSelected);
             previousCellSelected.current = cellSelected;
             setUpdateGame((game) => !game);
         } else {
