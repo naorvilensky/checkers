@@ -1,12 +1,10 @@
 import styled from "styled-components";
 import Cell from "./Cell";
 import { cloneElement, useEffect, useRef, useState } from "react";
-import { CELL_COLOR, CELL_STATE, PIECE_PLACEMENTS, STARTING_PLAYER } from "./chessConstants";
+import { CELL_COLOR, CELL_STATE, PIECE_PLACEMENTS, STARTING_PLAYER } from "./checkersConstants";
+import { BOARD_SIZE, BOARD_SIZE_ADDITION, NUMBER_OF_CELLS, CELL_SIZE } from "./logic/constants";
+import { GameBoard } from "./logic/gameBoard";
 
-const NUMBER_OF_CELLS = 8;
-const BOARD_SIZE = Math.min(window.screen.width, window.screen.height);
-const CELL_SIZE = Math.floor(BOARD_SIZE / NUMBER_OF_CELLS);
-const BOARD_SIZE_ADDITION = CELL_SIZE === BOARD_SIZE / NUMBER_OF_CELLS ? 2 : 0;
 const Container = styled.div`
     width: ${BOARD_SIZE + BOARD_SIZE_ADDITION}px;
     height: ${BOARD_SIZE + BOARD_SIZE_ADDITION}px;
@@ -17,152 +15,76 @@ const Container = styled.div`
     box-shadow: 3px 6px 17px 5px rgba(0, 0, 0, 0.47);
 `;
 export default function Board() {
-    const [gameState, setGameState] = useState(STARTING_PLAYER);
-    const [cellSelected, setCellSelected] = useState();
-    const [cells, setCells] = useState([]);
-    const previousCellSelected = useRef();
-
-    const getCellPiece = (i, j) => {
-        const checkEven = (value) => (j % 2 === 0 ? value : CELL_STATE.EMPTY);
-        const checkOdd = (value) => (j % 2 !== 0 ? value : CELL_STATE.EMPTY);
-        const red = CELL_STATE.RED,
-            black = CELL_STATE.BLACK;
-        switch (i) {
-            case PIECE_PLACEMENTS.RED:
-                return checkOdd(red);
-            case PIECE_PLACEMENTS.RED + 1:
-                return checkEven(red);
-            case PIECE_PLACEMENTS.RED + 2:
-                return checkOdd(red);
-            case PIECE_PLACEMENTS.BLACK:
-                return checkEven(black);
-            case PIECE_PLACEMENTS.BLACK + 1:
-                return checkOdd(black);
-            case PIECE_PLACEMENTS.BLACK + 2:
-                return checkEven(black);
-            default:
-                return CELL_STATE.EMPTY;
-        }
-    };
-
-    const setAllowedCells = (cell, cells) => {
-        const i = cell.props.i;
-        const j = cell.props.j;
-
-        const updateCell = (a, b) => {
-            cells[a][b] = cloneElement(cells[a][b], { allowedCell: true });
-            return true;
-        };
-
-        const checkCellAllowed = (a, b, cellState = CELL_STATE.EMPTY) => {
-            if (a < 0 || b < 0 || a >= NUMBER_OF_CELLS || b >= NUMBER_OF_CELLS) {
-                return false;
-            }
-
-            const c = cells[a][b];
-
-            if (c.props.cellState === cell.props.cellState) {
-                return false;
-            }
-
-            if (c.props.cellState === CELL_STATE.EMPTY) {
-                updateCell(a, b);
-                return true;
-            }
-
-            if (c.props.cellState !== cell.props.cellState && cellState !== CELL_STATE.EMPTY) {
-                const x = cellState === CELL_STATE.RED ? a + 1 : a - 1;
-                const diff = j - b;
-
-                return checkCellAllowed(x, b - diff);
-            }
-        };
-
-        const x = cell.props.cellState === CELL_STATE.RED ? i + 1 : i - 1;
-
-        const f1 = checkCellAllowed(x, j + 1, cell.props.cellState);
-        const f2 = checkCellAllowed(x, j - 1, cell.props.cellState);
-
-        return f1 || f2;
-    };
+    const [, setGameState] = useState(null);
+    const [cellSelected, setCellSelected] = useState(null);
+    const previousCellSelected = useRef(null);
+    const gameBoard = useRef(null);
+    const [, setUpdateGame] = useRef(false);
 
     useEffect(() => {
+        const board = gameBoard.current;
         if (!cellSelected) {
             return;
         }
 
-        const updateCellsGameState = (cells, gs, args = {}) =>
-            cells.map((row) => row.map((cell) => cloneElement(cell, { gameState: gs, ...args })));
-
         // player selected piece to move
         if (!previousCellSelected.current) {
-            setCells((cells) => {
-                if (!setAllowedCells(cells[cellSelected[0]][cellSelected[1]], cells)) {
-                    return cells;
-                }
-
-                previousCellSelected.current = cellSelected;
-                return updateCellsGameState(cells, null);
-            });
+            board.setAllowedCells(cellSelected.i, cellSelected.j);
+            previousCellSelected.current = cellSelected;
+            setUpdateGame((game) => !game);
         } else {
             // player moved that piece
             setGameState((gameState) => {
                 const gs = gameState === CELL_STATE.RED ? CELL_STATE.BLACK : CELL_STATE.RED;
                 if (!previousCellSelected.current) {
+                    board.gameState = gs;
                     return gs;
                 }
-                setCells((cells) => {
-                    const cellsDup = [...cells];
-                    if (previousCellSelected.current) {
-                        const [i1, j1] = previousCellSelected.current;
-                        const [i2, j2] = cellSelected;
-                        const cellState = cellsDup[i1][j1].props.cellState;
-                        const diff1 = (i2 - i1) / 2;
-                        const diff2 = (j2 - j1) / 2;
-                        if (Math.abs(diff1) === 1) {
-                            cellsDup[i2 - diff1][j2 - diff2] = cloneElement(cellsDup[i2 - diff1][j2 - diff2], {
-                                cellState: CELL_STATE.EMPTY,
-                            });
-                        }
-                        cellsDup[i1][j1] = cloneElement(cellsDup[i1][j1], { cellState: CELL_STATE.EMPTY });
-                        cellsDup[i2][j2] = cloneElement(cellsDup[i2][j2], { cellState });
-                        previousCellSelected.current = null;
-                    }
-                    return updateCellsGameState(cellsDup, gs, {
-                        allowedCell: false,
-                    });
-                });
-                return gs;
+                if (previousCellSelected.current) {
+                    board.cellMovement(previousCellSelected.current, cellSelected);
+                    previousCellSelected.current = null;
+                }
+
+                board.gameState = gs;
             });
         }
     }, [cellSelected]);
 
+    // on mounted
     useEffect(() => {
         let color = CELL_COLOR.WHITE;
-        const cellsDup = [];
+        gameBoard.current = new GameBoard(STARTING_PLAYER);
+        let board = gameBoard.current;
         for (let i = 0; i < NUMBER_OF_CELLS; i++) {
-            cellsDup.push([]);
             for (let j = 0; j < NUMBER_OF_CELLS; j++) {
-                cellsDup[i].push(
-                    <Cell
-                        color={color}
-                        cellSize={CELL_SIZE}
-                        key={i + "" + j}
-                        i={i}
-                        j={j}
-                        cellState={getCellPiece(i, j)}
-                        gameState={STARTING_PLAYER}
-                        onCellClicked={(i, j) => setCellSelected([i, j])}
-                    />,
-                );
+                board.addCell(color, i, j);
                 if (j < NUMBER_OF_CELLS - 1) {
                     color = color === CELL_COLOR.WHITE ? CELL_COLOR.BLACK : CELL_COLOR.WHITE;
                 }
             }
         }
 
-        setCells(cellsDup);
+        setGameState(STARTING_PLAYER);
     }, []);
 
-    return <Container>{cells}</Container>;
+    return (
+        <Container>
+            {gameBoard.current &&
+                gameBoard.current.board.map((row) =>
+                    row.map((cell) => (
+                        <Cell
+                            color={cell.color}
+                            cellSize={CELL_SIZE}
+                            key={cell.i + "" + cell.j}
+                            i={cell.i}
+                            j={cell.j}
+                            cellState={cell.cellState}
+                            gameState={gameBoard.current.gameState}
+                            onCellClicked={(i, j) => setCellSelected({ i, j })}
+                            allowedCell={cell.allowedCell}
+                        />
+                    )),
+                )}
+        </Container>
+    );
 }

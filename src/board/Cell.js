@@ -1,7 +1,7 @@
 import styled from "styled-components";
-import ChessPiece from "./ChessPiece";
+import CheckersPiece from "./CheckersPiece";
 import { useMemo } from "react";
-import { CELL_STATE, CHESS_PIECE_COLOR } from "./chessConstants";
+import { CELL_STATE, CHESS_PIECE_COLOR } from "./checkersConstants";
 
 const Container = styled.div`
     width: ${({ cellSize }) => cellSize}px;
@@ -33,7 +33,7 @@ export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, 
             allowedCell={allowedCell}
             onClick={() => pointer && onCellClicked(i, j)}
         >
-            {pieceColor ? <ChessPiece color={pieceColor} /> : null}
+            {pieceColor ? <CheckersPiece color={pieceColor} /> : null}
         </Container>
     );
 }
