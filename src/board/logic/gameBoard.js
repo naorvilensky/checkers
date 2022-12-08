@@ -1,6 +1,5 @@
 import { NUMBER_OF_CELLS } from "./constants";
 import { GameCell } from "./gameCell";
-import { cloneElement } from "react";
 import { CELL_STATE } from "../checkersConstants";
 
 export class GameBoard {

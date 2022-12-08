@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import Cell from "./Cell";
-import { cloneElement, useEffect, useRef, useState } from "react";
-import { CELL_COLOR, CELL_STATE, PIECE_PLACEMENTS, STARTING_PLAYER } from "./checkersConstants";
+import { useEffect, useRef, useState } from "react";
+import { CELL_COLOR, CELL_STATE, STARTING_PLAYER } from "./checkersConstants";
 import { BOARD_SIZE, BOARD_SIZE_ADDITION, NUMBER_OF_CELLS, CELL_SIZE } from "./logic/constants";
 import { GameBoard } from "./logic/gameBoard";
 
@@ -19,7 +19,7 @@ export default function Board() {
     const [cellSelected, setCellSelected] = useState(null);
     const previousCellSelected = useRef(null);
     const gameBoard = useRef(null);
-    const [, setUpdateGame] = useRef(false);
+    const [, setUpdateGame] = useState(false);
 
     useEffect(() => {
         const board = gameBoard.current;
