@@ -14,7 +14,7 @@ const Inner = styled.div`
     background: ${({ color }) => color};
     border: 4px solid white;
 `;
-export default function CheckersPiece({ color }) {
+export default function CheckersPiece({ color }: any) {
     return (
         <Container>
             <Inner color={color} />

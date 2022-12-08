@@ -2,8 +2,9 @@ import styled from "styled-components";
 import Cell from "./Cell";
 import { useEffect, useRef, useState } from "react";
 import { CELL_COLOR, CELL_STATE, STARTING_PLAYER } from "./checkersConstants";
-import { BOARD_SIZE, BOARD_SIZE_ADDITION, NUMBER_OF_CELLS, CELL_SIZE } from "./logic/constants";
+import { BOARD_SIZE, BOARD_SIZE_ADDITION, NUMBER_OF_CELLS, CELL_SIZE, CellCoordinates } from "./logic/constants";
 import { GameBoard } from "./logic/gameBoard";
+import { GameCell } from "./logic/gameCell";
 
 const Container = styled.div`
     width: ${BOARD_SIZE + BOARD_SIZE_ADDITION}px;
@@ -15,14 +16,14 @@ const Container = styled.div`
     box-shadow: 3px 6px 17px 5px rgba(0, 0, 0, 0.47);
 `;
 export default function Board() {
-    const [, setGameState] = useState(null);
-    const [cellSelected, setCellSelected] = useState(null);
-    const previousCellSelected = useRef(null);
-    const gameBoard = useRef(null);
+    const [, setGameState] = useState<CELL_STATE>();
+    const [cellSelected, setCellSelected] = useState<CellCoordinates>();
+    const previousCellSelected = useRef<CellCoordinates | null>();
+    const gameBoard = useRef<GameBoard>();
     const [, setUpdateGame] = useState(false);
 
     useEffect(() => {
-        const board = gameBoard.current;
+        const board: GameBoard = gameBoard.current as GameBoard;
         if (!cellSelected) {
             return;
         }
@@ -34,7 +35,7 @@ export default function Board() {
             setUpdateGame((game) => !game);
         } else {
             // player moved that piece
-            setGameState((gameState) => {
+            setGameState((gameState: any) => {
                 const gs = gameState === CELL_STATE.RED ? CELL_STATE.BLACK : CELL_STATE.RED;
                 if (!previousCellSelected.current) {
                     board.gameState = gs;
@@ -71,7 +72,7 @@ export default function Board() {
         <Container>
             {gameBoard.current &&
                 gameBoard.current.board.map((row) =>
-                    row.map((cell) => (
+                    row.map((cell: GameCell) => (
                         <Cell
                             color={cell.color}
                             cellSize={CELL_SIZE}
@@ -79,8 +80,8 @@ export default function Board() {
                             i={cell.i}
                             j={cell.j}
                             cellState={cell.cellState}
-                            gameState={gameBoard.current.gameState}
-                            onCellClicked={(i, j) => setCellSelected({ i, j })}
+                            gameState={(gameBoard.current as GameBoard).gameState}
+                            onCellClicked={(i: number, j: number) => setCellSelected({ i, j })}
                             allowedCell={cell.allowedCell}
                         />
                     )),

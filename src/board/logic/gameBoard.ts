@@ -1,9 +1,12 @@
-import { NUMBER_OF_CELLS } from "./constants";
+import { CellCoordinates, NUMBER_OF_CELLS } from "./constants.js";
 import { GameCell } from "./gameCell";
 import { CELL_STATE } from "../checkersConstants";
 
 export class GameBoard {
-    constructor(gameState) {
+    gameState: CELL_STATE;
+    board: GameCell[][];
+
+    constructor(gameState: CELL_STATE) {
         this.gameState = gameState;
         this.board = [];
         for (let i = 0; i < NUMBER_OF_CELLS; i++) {
@@ -11,11 +14,11 @@ export class GameBoard {
         }
     }
 
-    addCell(color, i, j, cellState) {
-        this.board[i][j] = new GameCell(color, i, j, cellState);
+    addCell(color: any, i: number, j: number) {
+        this.board[i][j] = new GameCell(color, i, j);
     }
 
-    cellMovement({ i: i1, j: j1 }, { i: i2, j: j2 }) {
+    cellMovement({ i: i1, j: j1 }: CellCoordinates, { i: i2, j: j2 }: CellCoordinates) {
         const previousCell = this.board[i1][j1];
         const selectedCell = this.board[i2][j2];
         const diff1 = (i2 - i1) / 2;
@@ -29,20 +32,20 @@ export class GameBoard {
         selectedCell.cellState = cellState;
     }
 
-    setAllowedCells({ i, j }) {
-        const cell = this.board[i][j];
+    setAllowedCells({ i, j }: CellCoordinates) {
+        const cell: GameCell = this.board[i][j];
 
-        const updateCell = (a, b) => {
+        const updateCell = (a: number, b: number) => {
             this.board[a][b].setAllowed();
             return true;
         };
 
-        const checkCellAllowed = (a, b, cellState = CELL_STATE.EMPTY) => {
+        const checkCellAllowed = (a: number, b: number, cellState: CELL_STATE = CELL_STATE.EMPTY): any => {
             if (a < 0 || b < 0 || a >= NUMBER_OF_CELLS || b >= NUMBER_OF_CELLS) {
                 return false;
             }
 
-            const c = this.board[a][b];
+            const c: GameCell = this.board[a][b];
 
             if (c.cellState === cell.cellState) {
                 return false;

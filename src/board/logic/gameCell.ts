@@ -1,10 +1,17 @@
-import { CELL_STATE, PIECE_PLACEMENTS } from "../checkersConstants";
+import { CELL_COLOR, CELL_STATE, PIECE_PLACEMENTS } from "../checkersConstants";
 
 export class GameCell {
-    constructor(color, i, j) {
-        const getCellState = (i, j) => {
-            const checkEven = (value) => (j % 2 === 0 ? value : CELL_STATE.EMPTY);
-            const checkOdd = (value) => (j % 2 !== 0 ? value : CELL_STATE.EMPTY);
+    color: CELL_COLOR;
+    i: number;
+    j: number;
+    key: string;
+    cellState: CELL_STATE;
+    allowedCell: boolean;
+
+    constructor(color: any, i: number, j: number) {
+        const getCellState = (i: number, j: number): CELL_STATE => {
+            const checkEven = (value: CELL_STATE): CELL_STATE => (j % 2 === 0 ? value : CELL_STATE.EMPTY);
+            const checkOdd = (value: CELL_STATE): CELL_STATE => (j % 2 !== 0 ? value : CELL_STATE.EMPTY);
             const red = CELL_STATE.RED,
                 black = CELL_STATE.BLACK;
             switch (i) {

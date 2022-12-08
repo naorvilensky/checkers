@@ -3,7 +3,25 @@ import CheckersPiece from "./CheckersPiece";
 import { useMemo } from "react";
 import { CELL_STATE, CHESS_PIECE_COLOR } from "./checkersConstants";
 
-const Container = styled.div`
+interface ContainerProps {
+    cellSize: any;
+    allowedCell: any;
+    color: any;
+    pointer: any;
+}
+
+interface CellProps {
+    cellSize: any;
+    color: any;
+    cellState: any;
+    onCellClicked: any;
+    i: any;
+    j: any;
+    gameState: any;
+    allowedCell: any;
+}
+
+const Container = styled.div<ContainerProps>`
     width: ${({ cellSize }) => cellSize}px;
     height: ${({ cellSize }) => cellSize}px;
     background-color: ${({ color, allowedCell }) => (allowedCell ? "#444444" : color)};
@@ -11,7 +29,7 @@ const Container = styled.div`
     cursor: ${({ pointer }) => (pointer ? "pointer" : "auto")};
 `;
 
-export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, gameState, allowedCell }) {
+export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, gameState, allowedCell }: CellProps) {
     const pieceColor = useMemo(() => {
         switch (cellState) {
             case CELL_STATE.RED:
