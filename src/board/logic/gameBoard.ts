@@ -142,17 +142,17 @@ export class GameBoard {
 
     private setAllowedEnemyCells(cell: GameCell, allowCells: boolean = true) {
         const cellState = cell.cellState;
+        const king = cell.isKing();
 
         const cellCheckup = (jDirection: number, iDirection: number) => {
             if (this.checkValidCell(cell.i + iDirection, cell.j + jDirection)) {
-                const c: GameCell = this.board[cell.i + iDirection][cell.j + jDirection];
-
                 do {
-                    iDirection += iDirection;
-                    jDirection += jDirection;
                     if (!this.checkValidCell(cell.i + iDirection, cell.j + jDirection)) {
                         return false;
                     }
+
+                    const c = this.board[cell.i + iDirection][cell.j + jDirection];
+                    console.log(c.cellState);
 
                     if (c.cellState !== cellState && c.cellState !== CELL_STATE.EMPTY) {
                         const c1 = this.board[cell.i + iDirection][cell.j + jDirection];
@@ -164,8 +164,12 @@ export class GameBoard {
                             }
                         }
                         return allowedCell;
+                    } else if (cell.cellState !== cellState) {
+                        console.log(cell);
                     }
-                } while (c.isKing());
+                    iDirection += iDirection;
+                    jDirection += jDirection;
+                } while (king);
             }
 
             return false;
