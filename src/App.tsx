@@ -1,6 +1,6 @@
-import "./App.css";
+import "App.css";
 import styled from "styled-components";
-import Board from "./board";
+import Board from "board";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
