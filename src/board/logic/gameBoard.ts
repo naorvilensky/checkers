@@ -5,6 +5,7 @@ import { CELL_STATE } from "../checkersConstants";
 export class GameBoard {
     gameState: CELL_STATE;
     board: GameCell[][];
+    continuesToEnemies: boolean = false;
 
     constructor(gameState: CELL_STATE) {
         this.gameState = gameState;
@@ -26,21 +27,28 @@ export class GameBoard {
         const previousCell = this.board[i1][j1];
         const selectedCell = this.board[i2][j2];
 
-        const diff1 = (i2 - i1) / 2;
-        const diff2 = (j2 - j1) / 2;
-        if (Math.abs(diff1) === 1) {
-            this.board[i2 - diff1][j2 - diff2].cellState = CELL_STATE.EMPTY;
-        }
-
         const cellState = previousCell.cellState;
         previousCell.cellState = CELL_STATE.EMPTY;
         selectedCell.cellState = cellState;
+
         this.setAllCellsAsNotAllowed();
+
+        if (selectedCell.eatenEnemy) {
+            selectedCell.eatenEnemy.cellState = CELL_STATE.EMPTY;
+            selectedCell.eatenEnemy = null;
+            return this.setAllowedEnemyCells(selectedCell);
+        }
+        return false;
     }
 
     setAllowedCells({ i, j }: CellCoordinates) {
         this.setAllCellsAsNotAllowed();
         const cell: GameCell = this.board[i][j];
+
+        // if there are enemies he can eat, the player must eat one of them
+        if (this.setAllowedEnemyCells(cell)) {
+            return true;
+        }
 
         const checkCellAllowed = (a: number, b: number): any => {
             if (!this.checkValidCell(a, b)) {
@@ -65,29 +73,36 @@ export class GameBoard {
         return f1 || f2;
     }
 
-    private setAllCellsAsNotAllowed() {
-        this.board.forEach((row: GameCell[]) => row.forEach((cell: GameCell) => cell.setUnAllowed()));
-    }
-
     private setAllowedEnemyCells(cell: GameCell) {
-        let leftCell;
-        let rightCell;
         const cellState = cell.cellState;
 
-        const direction = cellState === CELL_STATE.RED ? 1 : -1;
-        let nextI = cell.i + direction;
+        const cellCheckup = (jDirection: number, iDirection: number) => {
+            if (this.checkValidCell(cell.i + iDirection, cell.j + jDirection)) {
+                const c: GameCell = this.board[cell.i + iDirection][cell.j + jDirection];
+                if (
+                    c.cellState !== cellState &&
+                    c.cellState !== CELL_STATE.EMPTY &&
+                    this.checkValidCell(cell.i + 2 * iDirection, cell.j + 2 * jDirection)
+                ) {
+                    const c1 = this.board[cell.i + 2 * iDirection][cell.j + 2 * jDirection];
+                    c1.allowedCell = c1.cellState === CELL_STATE.EMPTY;
+                    if (c1.allowedCell) {
+                        c1.eatenEnemy = c;
+                    }
+                    return c1.allowedCell;
+                }
+            }
 
-        if (this.checkValidCell(nextI, 0)) {
             return false;
-        }
+        };
 
-        if (this.checkValidCell(nextI, cell.j - 1)) {
-            leftCell = this.board[nextI][cell.j - 1];
-        }
+        this.continuesToEnemies =
+            cellCheckup(-1, -1) || // left cell
+            cellCheckup(+1, -1) || // right cell
+            cellCheckup(-1, +1) || // left cell
+            cellCheckup(+1, +1); // right cell
 
-        if (this.checkValidCell(nextI, cell.j + 1)) {
-            rightCell = this.board[nextI][cell.j + 1];
-        }
+        return this.continuesToEnemies;
     }
 
     private checkValidCell(i: number, j: number) {
@@ -96,5 +111,9 @@ export class GameBoard {
         }
 
         return !(j < 0 || j >= this.board.length);
+    }
+
+    private setAllCellsAsNotAllowed() {
+        this.board.forEach((row: GameCell[]) => row.forEach((cell: GameCell) => cell.setUnAllowed()));
     }
 }

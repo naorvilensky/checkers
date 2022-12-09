@@ -22,6 +22,10 @@ export default function Board() {
     const gameBoard = useRef<GameBoard>();
     const [, setUpdateGame] = useState(false);
 
+    function updateGame() {
+        setUpdateGame((game) => !game);
+    }
+
     useEffect(() => {
         const board: GameBoard = gameBoard.current as GameBoard;
 
@@ -33,14 +37,14 @@ export default function Board() {
         if (!previousCellSelected.current) {
             if (board.setAllowedCells(cellSelected)) {
                 previousCellSelected.current = cellSelected;
-                setUpdateGame((game) => !game);
+                updateGame();
             }
         } else {
             // he might have pressed a different piece
             if (board.pieceChanged(cellSelected)) {
                 board.setAllowedCells(cellSelected);
                 previousCellSelected.current = cellSelected;
-                setUpdateGame((game) => !game);
+                updateGame();
                 return;
             }
 
@@ -55,12 +59,20 @@ export default function Board() {
 
                 if (previousCellSelected.current) {
                     board.cellMovement(previousCellSelected.current, cellSelected);
-                    previousCellSelected.current = null;
                 }
 
-                board.gameState = gs;
+                if (board.continuesToEnemies) {
+                    updateGame();
+                    previousCellSelected.current = cellSelected;
+                    return board.gameState;
+                }
 
-                return gs;
+                if (!board.continuesToEnemies) {
+                    previousCellSelected.current = null;
+                    board.gameState = gs;
+                }
+
+                return board.gameState;
             });
         }
     }, [cellSelected]);
@@ -84,6 +96,9 @@ export default function Board() {
 
     return (
         <Container>
+            <div style={{ width: "100%", padding: "8px", textAlign: "center", background: gameState, color: "white" }}>
+                {gameState}
+            </div>
             {gameBoard.current &&
                 gameBoard.current.board.map((row) =>
                     row.map((cell: GameCell) => (

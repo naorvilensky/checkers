@@ -7,6 +7,7 @@ export class GameCell {
     key: string;
     cellState: CELL_STATE;
     allowedCell: boolean;
+    eatenEnemy: GameCell | null = null;
 
     constructor(color: any, i: number, j: number) {
         const getCellState = (i: number, j: number): CELL_STATE => {

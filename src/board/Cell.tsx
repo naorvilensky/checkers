@@ -41,7 +41,9 @@ export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, 
         }
     }, [cellState]);
 
-    const pointer = useMemo(() => cellState === gameState || allowedCell, [cellState, gameState, allowedCell]);
+    const pointer = useMemo(() => {
+        return cellState === gameState || allowedCell;
+    }, [cellState, gameState, allowedCell]);
 
     return (
         <Container
