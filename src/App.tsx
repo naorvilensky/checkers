@@ -1,6 +1,14 @@
 import "./App.css";
 import styled from "styled-components";
 import Board from "./board";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <Board />,
+    },
+]);
 
 const Container = styled.div`
     width: 100%;
@@ -11,14 +19,10 @@ const Container = styled.div`
     justify-content: center;
 `;
 
-function App() {
+export default function App() {
     return (
-        <div className="App">
-            <Container>
-                <Board />
-            </Container>
-        </div>
+        <Container>
+            <RouterProvider router={router} />
+        </Container>
     );
 }
-
-export default App;
