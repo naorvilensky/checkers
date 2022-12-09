@@ -26,6 +26,16 @@ export class GameBoard {
         const previousCell = this.board[i1][j1];
         const selectedCell = this.board[i2][j2];
 
+        const kingMe = () => {
+            switch (selectedCell.cellState) {
+                case CELL_STATE.BLACK:
+                    selectedCell.i === 0 && selectedCell.becomeKing();
+                    break;
+                case CELL_STATE.RED:
+                    selectedCell.i === this.board.length - 1 && selectedCell.becomeKing();
+                    break;
+            }
+        };
         const cellState = previousCell.cellState;
         previousCell.cellState = CELL_STATE.EMPTY;
         selectedCell.cellState = cellState;
@@ -35,41 +45,60 @@ export class GameBoard {
         if (selectedCell.eatenEnemy) {
             selectedCell.eatenEnemy.cellState = CELL_STATE.EMPTY;
             selectedCell.eatenEnemy = null;
+            kingMe();
             return this.setAllowedEnemyCells(selectedCell);
         }
+
+        kingMe();
         return false;
     }
 
     setAllowedCells({ i, j }: CellCoordinates) {
         this.setAllCellsAsNotAllowed();
         const cell: GameCell = this.board[i][j];
+        const king = cell.isKing();
 
         // if there are enemies he can eat, the player must eat one of them
         if (this.setAllowedEnemyCells(cell)) {
             return true;
         }
 
-        const checkCellAllowed = (a: number, b: number): any => {
-            if (!this.checkValidCell(a, b)) {
-                return false;
-            }
+        const direction = cell.cellState === CELL_STATE.RED ? 1 : -1;
+        const checkDirection = (iDirection: number, jDirection: number) => {
+            let cellWasAllowed = false;
 
-            const c: GameCell = this.board[a][b];
+            do {
+                if (!this.checkValidCell(cell.i + iDirection, cell.j + jDirection)) {
+                    return cellWasAllowed;
+                }
 
-            if (c.cellState !== CELL_STATE.EMPTY) {
-                return false;
-            }
+                const c: GameCell = this.board[cell.i + iDirection][cell.j + jDirection];
 
-            this.board[a][b].setAllowed();
-            return true;
+                if (c.cellState !== CELL_STATE.EMPTY) {
+                    return cellWasAllowed;
+                }
+
+                c.setAllowed();
+                cellWasAllowed = true;
+
+                iDirection += iDirection;
+                jDirection += jDirection;
+            } while (king);
+
+            return cellWasAllowed;
         };
 
-        const direction = cell.cellState === CELL_STATE.RED ? i + 1 : i - 1;
+        let f1, f2, f3, f4;
 
-        const f1 = checkCellAllowed(direction, j + 1);
-        const f2 = checkCellAllowed(direction, j - 1);
+        f1 = checkDirection(direction, 1);
+        f2 = checkDirection(direction, -1);
 
-        return f1 || f2;
+        if (king) {
+            f3 = checkDirection(-direction, 1);
+            f4 = checkDirection(-direction, -1);
+        }
+
+        return f1 || f2 || f3 || f4;
     }
 
     setGameState(gameState: CELL_STATE) {
@@ -92,7 +121,7 @@ export class GameBoard {
 
                 if (this.setAllowedEnemyCells(cell, false)) {
                     enemiesAvailable = true;
-                    cell.allowedCell = true;
+                    cell.setAllowed();
                 }
             }
         }
@@ -105,7 +134,7 @@ export class GameBoard {
             for (let j = 0; j < this.board.length; j++) {
                 const cell = this.board[i][j];
                 if (this.gameState === cell.cellState) {
-                    cell.allowedCell = true;
+                    cell.setAllowed();
                 }
             }
         }
@@ -117,21 +146,26 @@ export class GameBoard {
         const cellCheckup = (jDirection: number, iDirection: number) => {
             if (this.checkValidCell(cell.i + iDirection, cell.j + jDirection)) {
                 const c: GameCell = this.board[cell.i + iDirection][cell.j + jDirection];
-                if (
-                    c.cellState !== cellState &&
-                    c.cellState !== CELL_STATE.EMPTY &&
-                    this.checkValidCell(cell.i + 2 * iDirection, cell.j + 2 * jDirection)
-                ) {
-                    const c1 = this.board[cell.i + 2 * iDirection][cell.j + 2 * jDirection];
-                    let allowedCell = c1.cellState === CELL_STATE.EMPTY;
-                    if (allowCells) {
-                        c1.allowedCell = allowedCell;
-                        if (c1.allowedCell) {
-                            c1.eatenEnemy = c;
-                        }
+
+                do {
+                    iDirection += iDirection;
+                    jDirection += jDirection;
+                    if (!this.checkValidCell(cell.i + iDirection, cell.j + jDirection)) {
+                        return false;
                     }
-                    return allowedCell;
-                }
+
+                    if (c.cellState !== cellState && c.cellState !== CELL_STATE.EMPTY) {
+                        const c1 = this.board[cell.i + iDirection][cell.j + jDirection];
+                        const allowedCell = c1.cellState === CELL_STATE.EMPTY;
+                        if (allowCells) {
+                            c1.allowedCell = allowedCell;
+                            if (c1.allowedCell) {
+                                c1.eatenEnemy = c;
+                            }
+                        }
+                        return allowedCell;
+                    }
+                } while (c.isKing());
             }
 
             return false;

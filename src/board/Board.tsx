@@ -107,25 +107,28 @@ export default function Board() {
     }, []);
 
     return (
-        <Container>
+        <div>
             <div style={{ width: "100%", padding: "8px", textAlign: "center", background: gameState, color: "white" }}>
                 Currently Playing: {gameState}
             </div>
-            {gameBoard.current &&
-                gameBoard.current.board.map((row) =>
-                    row.map((cell: GameCell) => (
-                        <Cell
-                            color={cell.color}
-                            cellSize={CELL_SIZE}
-                            key={cell.i + "" + cell.j}
-                            i={cell.i}
-                            j={cell.j}
-                            cellState={cell.cellState}
-                            onCellClicked={(i: number, j: number) => setCellSelected({ i, j })}
-                            allowedCell={cell.allowedCell}
-                        />
-                    )),
-                )}
-        </Container>
+            <Container>
+                {gameBoard.current &&
+                    gameBoard.current.board.map((row) =>
+                        row.map((cell: GameCell) => (
+                            <Cell
+                                color={cell.color}
+                                cellSize={CELL_SIZE}
+                                key={cell.i + "" + cell.j}
+                                i={cell.i}
+                                j={cell.j}
+                                cellState={cell.cellState}
+                                king={cell.isKing()}
+                                onCellClicked={(i: number, j: number) => setCellSelected({ i, j })}
+                                allowedCell={cell.allowedCell}
+                            />
+                        )),
+                    )}
+            </Container>
+        </div>
     );
 }

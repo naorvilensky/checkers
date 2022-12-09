@@ -18,6 +18,7 @@ interface CellProps {
     i: any;
     j: any;
     allowedCell: any;
+    king: boolean;
 }
 
 const Container = styled.div<ContainerProps>`
@@ -28,7 +29,7 @@ const Container = styled.div<ContainerProps>`
     cursor: ${({ pointer }) => (pointer ? "pointer" : "auto")};
 `;
 
-export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, allowedCell }: CellProps) {
+export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, allowedCell, king }: CellProps) {
     const pieceColor = useMemo(() => {
         switch (cellState) {
             case CELL_STATE.RED:
@@ -48,7 +49,7 @@ export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, 
             allowedCell={allowedCell}
             onClick={() => allowedCell && onCellClicked(i, j)}
         >
-            {pieceColor ? <CheckersPiece color={pieceColor} /> : null}
+            {pieceColor ? <CheckersPiece king={king} color={pieceColor} /> : null}
         </Container>
     );
 }

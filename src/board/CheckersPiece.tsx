@@ -13,11 +13,15 @@ const Inner = styled.div`
     border-radius: 50%;
     background: ${({ color }) => color};
     border: 4px solid white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
 `;
-export default function CheckersPiece({ color }: any) {
+export default function CheckersPiece({ color, king }: any) {
     return (
         <Container>
-            <Inner color={color} />
+            <Inner color={color}>{king && "king"}</Inner>
         </Container>
     );
 }

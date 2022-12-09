@@ -6,8 +6,11 @@ export class GameCell {
     j: number;
     key: string;
     cellState: CELL_STATE;
-    allowedCell: boolean;
+    allowedCell: boolean = false;
     eatenEnemy: GameCell | null = null;
+
+    // TODO change to false
+    private king: boolean = true;
 
     constructor(color: any, i: number, j: number) {
         const getCellState = (i: number, j: number): CELL_STATE => {
@@ -37,14 +40,21 @@ export class GameCell {
         this.j = j;
         this.key = i + "" + j;
         this.cellState = getCellState(i, j);
-        this.allowedCell = false;
     }
 
-    setAllowed() {
+    setAllowed(): void {
         this.allowedCell = true;
     }
 
-    setUnAllowed() {
+    setUnAllowed(): void {
         this.allowedCell = false;
+    }
+
+    becomeKing(): void {
+        this.king = true;
+    }
+
+    isKing(): boolean {
+        return this.king;
     }
 }
