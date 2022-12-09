@@ -3,12 +3,11 @@ import { GameCell } from "./gameCell";
 import { CELL_STATE } from "../checkersConstants";
 
 export class GameBoard {
-    gameState: CELL_STATE;
+    gameState: CELL_STATE = CELL_STATE.EMPTY;
     board: GameCell[][];
     continuesToEnemies: boolean = false;
 
-    constructor(gameState: CELL_STATE) {
-        this.gameState = gameState;
+    constructor() {
         this.board = [];
         for (let i = 0; i < NUMBER_OF_CELLS; i++) {
             this.board.push([]);
@@ -73,7 +72,46 @@ export class GameBoard {
         return f1 || f2;
     }
 
-    private setAllowedEnemyCells(cell: GameCell) {
+    setGameState(gameState: CELL_STATE) {
+        if (this.gameState === gameState) {
+            return;
+        }
+
+        this.gameState = gameState;
+        this.checkAllowedPieces();
+    }
+
+    private checkAllowedPieces() {
+        let enemiesAvailable = false;
+        for (let i = 0; i < this.board.length; i++) {
+            for (let j = 0; j < this.board.length; j++) {
+                const cell = this.board[i][j];
+                if (this.gameState !== cell.cellState) {
+                    continue;
+                }
+
+                if (this.setAllowedEnemyCells(cell, false)) {
+                    enemiesAvailable = true;
+                    cell.allowedCell = true;
+                }
+            }
+        }
+
+        if (enemiesAvailable) {
+            return;
+        }
+
+        for (let i = 0; i < this.board.length; i++) {
+            for (let j = 0; j < this.board.length; j++) {
+                const cell = this.board[i][j];
+                if (this.gameState === cell.cellState) {
+                    cell.allowedCell = true;
+                }
+            }
+        }
+    }
+
+    private setAllowedEnemyCells(cell: GameCell, allowCells: boolean = true) {
         const cellState = cell.cellState;
 
         const cellCheckup = (jDirection: number, iDirection: number) => {
@@ -85,11 +123,14 @@ export class GameBoard {
                     this.checkValidCell(cell.i + 2 * iDirection, cell.j + 2 * jDirection)
                 ) {
                     const c1 = this.board[cell.i + 2 * iDirection][cell.j + 2 * jDirection];
-                    c1.allowedCell = c1.cellState === CELL_STATE.EMPTY;
-                    if (c1.allowedCell) {
-                        c1.eatenEnemy = c;
+                    let allowedCell = c1.cellState === CELL_STATE.EMPTY;
+                    if (allowCells) {
+                        c1.allowedCell = allowedCell;
+                        if (c1.allowedCell) {
+                            c1.eatenEnemy = c;
+                        }
                     }
-                    return c1.allowedCell;
+                    return allowedCell;
                 }
             }
 

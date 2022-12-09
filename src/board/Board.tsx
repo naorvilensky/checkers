@@ -20,6 +20,7 @@ export default function Board() {
     const [cellSelected, setCellSelected] = useState<CellCoordinates>();
     const previousCellSelected = useRef<CellCoordinates | null>();
     const gameBoard = useRef<GameBoard>();
+    const gameStateSetTwice = useRef<boolean>(false);
     const [, setUpdateGame] = useState(false);
 
     function updateGame() {
@@ -41,7 +42,8 @@ export default function Board() {
             }
         } else {
             // he might have pressed a different piece
-            if (board.pieceChanged(cellSelected)) {
+            // he has to continue using the same piece if he can eat other enemies
+            if (board.pieceChanged(cellSelected) && !board.continuesToEnemies) {
                 board.setAllowedCells(cellSelected);
                 previousCellSelected.current = cellSelected;
                 updateGame();
@@ -52,8 +54,15 @@ export default function Board() {
             setGameState((gameState: any) => {
                 const gs = gameState === CELL_STATE.RED ? CELL_STATE.BLACK : CELL_STATE.RED;
 
+                if (gameStateSetTwice.current) {
+                    gameStateSetTwice.current = false;
+                    return board.gameState;
+                }
+
+                gameStateSetTwice.current = true;
+
                 if (!previousCellSelected.current) {
-                    board.gameState = gs;
+                    board.setGameState(gs);
                     return gs;
                 }
 
@@ -62,14 +71,16 @@ export default function Board() {
                 }
 
                 if (board.continuesToEnemies) {
-                    updateGame();
                     previousCellSelected.current = cellSelected;
-                    return board.gameState;
+                    updateGame();
+                    return gameState;
                 }
 
-                if (!board.continuesToEnemies) {
-                    previousCellSelected.current = null;
-                    board.gameState = gs;
+                previousCellSelected.current = null;
+                board.setGameState(gs);
+
+                if (board.gameState === gameState) {
+                    updateGame();
                 }
 
                 return board.gameState;
@@ -80,7 +91,7 @@ export default function Board() {
     // on mounted
     useEffect(() => {
         let color = CELL_COLOR.WHITE;
-        gameBoard.current = new GameBoard(STARTING_PLAYER);
+        gameBoard.current = new GameBoard();
         let board: GameBoard = gameBoard.current;
         for (let i = 0; i < NUMBER_OF_CELLS; i++) {
             for (let j = 0; j < NUMBER_OF_CELLS; j++) {
@@ -91,13 +102,14 @@ export default function Board() {
             }
         }
 
+        board.setGameState(STARTING_PLAYER);
         setGameState(STARTING_PLAYER);
     }, []);
 
     return (
         <Container>
             <div style={{ width: "100%", padding: "8px", textAlign: "center", background: gameState, color: "white" }}>
-                {gameState}
+                Currently Playing: {gameState}
             </div>
             {gameBoard.current &&
                 gameBoard.current.board.map((row) =>
@@ -109,7 +121,6 @@ export default function Board() {
                             i={cell.i}
                             j={cell.j}
                             cellState={cell.cellState}
-                            gameState={gameState}
                             onCellClicked={(i: number, j: number) => setCellSelected({ i, j })}
                             allowedCell={cell.allowedCell}
                         />

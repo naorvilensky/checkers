@@ -17,7 +17,6 @@ interface CellProps {
     onCellClicked: any;
     i: any;
     j: any;
-    gameState: any;
     allowedCell: any;
 }
 
@@ -29,7 +28,7 @@ const Container = styled.div<ContainerProps>`
     cursor: ${({ pointer }) => (pointer ? "pointer" : "auto")};
 `;
 
-export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, gameState, allowedCell }: CellProps) {
+export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, allowedCell }: CellProps) {
     const pieceColor = useMemo(() => {
         switch (cellState) {
             case CELL_STATE.RED:
@@ -41,17 +40,13 @@ export default function Cell({ cellSize, color, cellState, onCellClicked, i, j, 
         }
     }, [cellState]);
 
-    const pointer = useMemo(() => {
-        return cellState === gameState || allowedCell;
-    }, [cellState, gameState, allowedCell]);
-
     return (
         <Container
             cellSize={cellSize}
             color={color}
-            pointer={pointer}
+            pointer={allowedCell}
             allowedCell={allowedCell}
-            onClick={() => pointer && onCellClicked(i, j)}
+            onClick={() => allowedCell && onCellClicked(i, j)}
         >
             {pieceColor ? <CheckersPiece color={pieceColor} /> : null}
         </Container>
